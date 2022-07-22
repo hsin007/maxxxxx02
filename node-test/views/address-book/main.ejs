@@ -1,0 +1,83 @@
+<%- include("../parts/html-head") %>
+<%- include("../parts/navbar") %>
+
+<div class="container">
+        <div class="row">
+            <div class="col-lg">
+                <form class="d-flex">
+                    <input class="form-control" type="date" name="birthBegin" value="<%= query.birthBegin ? query.birthBegin : '1980-01-01' %>" >
+                    <input class="form-control" type="date" name="birthEnd" value="<%= query.birthEnd ? query.birthEnd : '1981-01-01' %>" >
+                    <input
+                        class="form-control me-2"
+                        type="search"
+                        placeholder="Search"
+                        name="search"
+                        value="<%= query.search ? query.search : '' %>"
+                    />
+                    <button class="btn btn-outline-success" type="submit">
+                        Search
+                    </button>
+                </form>
+            </div>
+        </div>
+        <div class="row">
+            <nav aria-label="Page navigation example">
+                <ul class="pagination">
+                  <li class="page-item">
+                    <a class="page-link" href="#" aria-label="Previous">
+                      <span aria-hidden="true">&laquo;</span>
+                    </a>
+                    <% for(let i=page-5; i<=page+5; i++) 
+                    if(i>=1 && i<=totalPages){ 
+                        const obj = { page: i};
+                        if (query.search) {
+                            obj.search = query.search;
+                        }
+
+                        if (query.birthBegin) {
+                            obj.birthBegin = query.birthBegin;
+                        }
+
+                        if (query.birthEnd) {
+                            obj.birthEnd = query.birthEnd;
+                        }
+                        const searchLink = new URLSearchParams(obj).toString();               
+                        %>
+                    <li class="page-item <%= page===i ? 'active' : '' %>">
+                        <a class="page-link" href="?<%= searchLink %>"><%= i %></a>
+                        
+                    </li>
+                    <% } %>
+                    <li class="page-item">
+                        <a class="page-link" href="#">&raquo;</a>
+                    </li>
+                </ul>
+                </nav>
+        </div>
+    <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Name</th>
+            <th scope="col">Email</th>
+            <th scope="col">Mobile</th>
+            <th scope="col">Birthday</th>
+            <th scope="col">Address</th>
+          </tr>
+        </thead>
+        <tbody>
+            <% for(let i of rows){ %>
+          <tr>
+            <td><%= i.sid %></td>
+            <td><%= i.name %></td>
+            <td><%= i.email %></td>
+            <td><%= i.mobile %></td>
+            <td><%= toDateString(i.birthday) %></td>
+            <td><%= i.address %></td>
+          </tr>
+          <% } %>
+        </tbody>
+</div>
+
+<%- include("../parts/scripts") %>
+<%- include("../parts/html-foot") %>
