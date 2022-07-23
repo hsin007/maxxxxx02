@@ -85,11 +85,11 @@ router.get("/", async (req, res) => {
       return res.redirect(`?page=${output.totalPages}`);
       break;
   }
-  res.render("address-book/main", output);
+  res.render("member/main", output);
   if (!req.session.member) {
-    res.render("address-book/main-noadmin", output);
+    res.render("member/main-noadmin", output);
   } else {
-    res.render("address-book/main", output);
+    res.render("member/main", output);
   }
 });
 
@@ -97,11 +97,11 @@ router.get('/profile', async (req, res) => {
   if (!req.session.member) {
       return res.redirect('/');
   }
-  res.render('address-book/profile');
+  res.render('member/profile');
 });
 
 // router.get("/add", async (req, res) => {
-//   res.render("address-book/add");
+//   res.render("member/add");
 // });
 
 router.use((req, res, next) => {
@@ -112,7 +112,7 @@ router.get("/add", async (req, res) => {
   if (!req.session.member) {
     return res.redirect("/");
   }
-  res.render("address-book/add");
+  res.render("member/add");
 });
 // router.post("/add", upload.none(), (req, res) => {
 //   res.json(req.body);
