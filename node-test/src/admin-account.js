@@ -3,7 +3,7 @@ const db = require(__dirname + "/../modules/db-connect2.js");
 const bcryptjs = require("bcryptjs");
 
 const sql =
-  "INSERT INTO `admins`( `account`, `pass_hash`, `created_at`) VALUES ('Admin', ? , NOW()) ";
+  "INSERT INTO `member`( `account`, `pass_hash`, `created_at`) VALUES ('Admin', ? , NOW()) ";
 
 (async () => {
   var hash = await bcryptjs.hash("Admin000", 10);

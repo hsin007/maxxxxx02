@@ -69,7 +69,6 @@ app.use((req, res, next) => {
 });
 
 app.use("/member", require(__dirname + "/routes/member"));
-app.use("/carts", require(__dirname + "/routes/carts"));
 
 app
   .route("/form-data")
