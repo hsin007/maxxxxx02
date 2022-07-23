@@ -207,6 +207,39 @@ app
     res.json(output);
   });
 
+  app
+  .route("/forgotpassword")
+  .get(async (req, res) => {
+    res.render("forgotpassword");
+  })
+  .post(async (req, res) => {
+    const output = {
+      success: false,
+      error: "",
+      code: 0,
+    };
+    const sql = "UPDATE `member`(`account`, `email`, `pass_hash`, `create_at`) VALUES ('?','?','?', Now())";
+    const [q1] = await db.query(sql, [req.body.account]);
+
+    if (!q1.length) {
+      output.code = 405;
+      output.error = "Your account is error";
+      return res.json(output);
+    }
+
+    output.success = await bcrypt.compare(req.body.password, q1[0].pass_hash);
+    if (!output.success) {
+      output.code = 406;
+      output.error = "Your password is error";
+    } else {
+      req.session.member = {
+        sid: q1[0].sid,
+        account: q1[0].account,
+      };
+    }
+    res.json(output);
+  });
+
 app.get("/logout", (req, res) => {
   delete req.session.member;
   res.redirect("/");
