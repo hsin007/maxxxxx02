@@ -2,9 +2,9 @@ require("dotenv").config();
 
 const express = require("express");
 const app = express();
-const multer = require("multer");
+// const multer = require("multer");
 // const upload = multer({ dest: "temp_uploads" });
-const upload = require(__dirname + "/modules/upload-images");
+// const upload = require(__dirname + "/modules/upload-images");
 const session = require("express-session");
 const { json } = require("express");
 const moment = require("moment-timezone");
@@ -80,18 +80,51 @@ app
     res.render("form-data", { email, password });
   });
 
-app.post("/try-upload", upload.single("avatar"), (req, res) => {
-  res.json(req.file);
-});
+// app.post("/try-upload", upload.single("avatar"), (req, res) => {
+//   res.json(req.file);
+// });
 
-app.post("/try-uploads", upload.array("photos"), (req, res) => {
-  res.json(req.files);
-});
+// app.post("/try-uploads", upload.array("photos"), (req, res) => {
+//   res.json(req.files);
+// });
 
 // const bodyParser = express.urlencoded({extended: false});
 app.post("/post-test", (req, res) => {
   res.json(req.body);
 });
+
+app
+  .route("/register")
+  .get(async (req, res) => {
+    res.render("register");
+  })
+  .post(async (req, res) => {
+    const output = {
+      success: false,
+      error: "",
+      code: 0,
+    };
+    const sql = "INSERT INTO `member`(`account`, `email`, `pass_hash`, `create_at`) VALUES ('?','?','?', Now())";
+    const [q1] = await db.query(sql, [req.body.account]);
+
+    if (!q1.length) {
+      output.code = 405;
+      output.error = "Your account is error";
+      return res.json(output);
+    }
+
+    output.success = await bcrypt.compare(req.body.password, q1[0].pass_hash);
+    if (!output.success) {
+      output.code = 406;
+      output.error = "Your password is error";
+    } else {
+      req.session.member = {
+        sid: q1[0].sid,
+        account: q1[0].account,
+      };
+    }
+    res.json(output);
+  });
 
 app
   .route("/login")
