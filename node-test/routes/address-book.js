@@ -50,7 +50,7 @@ const getListHandler = async (req, res) => {
     return output;
   }
 
-  const mysql01 = `SELECT COUNT(1) totalRows FROM address_book ${where} `;
+  const mysql01 = `SELECT COUNT(1) totalRows FROM member ${where} `;
   const [[{ totalRows }]] = await db.query(mysql01);
   let totalPages = 0;
   if (totalRows) {
@@ -62,7 +62,7 @@ const getListHandler = async (req, res) => {
       return output;
     }
 
-    const mysql02 = `SELECT * FROM address_book ${where} ORDER BY sid DESC LIMIT ${
+    const mysql02 = `SELECT * FROM member ${where} ORDER BY sid DESC LIMIT ${
       (page - 1) * output.perPage
     }, ${output.perPage}`;
     const [m2] = await db.query(mysql02);
@@ -86,11 +86,18 @@ router.get("/", async (req, res) => {
       break;
   }
   res.render("address-book/main", output);
-  if (!req.session.admins) {
+  if (!req.session.member) {
     res.render("address-book/main-noadmin", output);
   } else {
     res.render("address-book/main", output);
   }
+});
+
+router.get('/profile', async (req, res) => {
+  if (!req.session.member) {
+      return res.redirect('/');
+  }
+  res.render('address-book/profile');
 });
 
 // router.get("/add", async (req, res) => {
@@ -102,7 +109,7 @@ router.use((req, res, next) => {
 });
 
 router.get("/add", async (req, res) => {
-  if (!req.session.admins) {
+  if (!req.session.member) {
     return res.redirect("/");
   }
   res.render("address-book/add");
@@ -112,7 +119,7 @@ router.get("/add", async (req, res) => {
 // });
 
 router.post("/add", upload.none(), async (req, res) => {
-  if (!req.session.admins) {
+  if (!req.session.member) {
     return res.json({
       success: false,
       error: "Please login before executing operations",
@@ -130,7 +137,7 @@ router.post("/add", upload.none(), async (req, res) => {
   console.log(schema.validate(req.body, { abortEarly: false })); //格式不符還是先放行資料傳送
   // res.json(schema.validate(req.body, { abortEarly: false }));
   // const sql =
-  //   "INSERT INTO `address_book`( `name`, `email`, `mobile`, `birthday`, `address`, `created_at` ) VALUES (?, ?, ?, ?, ?, NOW())";
+  //   "INSERT INTO `member`( `name`, `email`, `mobile`, `birthday`, `address`, `created_at` ) VALUES (?, ?, ?, ?, ?, NOW())";
   // const { name, email, mobile, birthday, address } = req.body;
   // const { results } = await db.query(sql, [
   //   name,
@@ -142,7 +149,7 @@ router.post("/add", upload.none(), async (req, res) => {
   // res.json(results);
 
   //用這個寫法要注意對應的欄位數量必須一致
-  const sql = "INSERT INTO `address_book` SET ?"; //非標準的sql語法
+  const sql = "INSERT INTO `member` SET ?"; //非標準的sql語法
   const insertData = { ...req.body, created_at: new Date() }; //補這欄處理created_at的空值問題
   const [results] = await db.query(sql, [insertData]);
   res.json(results);
@@ -150,6 +157,21 @@ router.post("/add", upload.none(), async (req, res) => {
 
 router.get("/api", async (req, res) => {
   const output = await getListHandler(req, res);
+  res.json(output);
+});
+
+router.get("/api-auth", async (req, res) => {
+  let output = {
+    success: false,
+    error: "",
+  };
+
+  if (res.locals.loginUser && res.locals.loginUser.account) {
+    output = { ...(await getListHandler(req, res)), success: true };
+  } else {
+    output.error = "沒有授權";
+  }
+  output.loginUser = res.locals.loginUser;
   res.json(output);
 });
 

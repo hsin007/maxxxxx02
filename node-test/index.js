@@ -57,6 +57,14 @@ app.use((req, res, next) => {
   res.locals.toDateString = toDateString;
   res.locals.toDatetimeString = toDatetimeString;
   res.locals.session = req.session;
+
+  const auth = req.get("Authorization");
+  res.locals.loginUser = null;
+  if (auth && auth.indexOf("Bearer ") === 0) {
+    const token = auth.slice(7);
+    res.locals.loginUser = jwt.verify(token, process.env.JWT_SECRET);
+  }
+
   next();
 });
 
@@ -97,7 +105,7 @@ app
       error: "",
       code: 0,
     };
-    const sql = "SELECT * FROM `admins` WHERE account = ?";
+    const sql = "SELECT * FROM `member` WHERE account = ?";
     const [q1] = await db.query(sql, [req.body.account]);
 
     if (!q1.length) {
@@ -111,7 +119,7 @@ app
       output.code = 406;
       output.error = "Your password is error";
     } else {
-      req.session.admins = {
+      req.session.member = {
         sid: q1[0].sid,
         account: q1[0].account,
       };
@@ -131,7 +139,7 @@ app
       code: 0,
       data: {},
     };
-    const sql = "SELECT * FROM admins WHERE account=?";
+    const sql = "SELECT * FROM member WHERE account=?";
     const [r1] = await db.query(sql, [req.body.account]);
 
     if (!r1.length) {
@@ -168,7 +176,7 @@ app
   });
 
 app.get("/logout", (req, res) => {
-  delete req.session.admins;
+  delete req.session.member;
   res.redirect("/");
 });
 
